@@ -1,6 +1,8 @@
 # reaction_wheel
 Software for the BYU Spacecraft Attitude Control System team
+
 Authors: Jordan Penner and Wesley Stirk
+
 Email: pennerj66@gmail.com
 
 Breakdown of the file system:
