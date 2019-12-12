@@ -20,12 +20,14 @@ MPU9250_DMP imu;
 float oldGyroX = 0, oldGyroY = 0, oldGyroZ = 0;
 
 void setup() {
+  // Init Serial Monitor, variables, etc.
   Serial.begin(9600);
   Serial.println("setup() called.");
   Input = 0;
   counter = 0;
   Setpoint = 100;
 
+  // Initialize the IMU
   if (imu.begin() != INV_SUCCESS)
   {
     while (1)
@@ -44,8 +46,9 @@ void setup() {
   imu.setCompassSampleRate(IMU_FREQ); // Set mag rate to 100Hz
   imu.dmpBegin(DMP_FEATURE_6X_LP_QUAT | // Enable 6-axis quat
                DMP_FEATURE_GYRO_CAL, // Use gyro calibration
-              10); // Set DMP FIFO rate to 10 Hz
+               10); // Set DMP FIFO rate to 10 Hz
 
+  // TODO: uncomment this to hopefully include all the code we need for PID control
   // aTune.SetOutputStep(STEP); // How far above and below the starting value the output will step
   // aTune.SetControlType(PID_CONTROL);
   // aTune.SetLookbackSec(HALF_PULSE); // Look back for 5 seconds at previous data
@@ -56,13 +59,12 @@ void loop() {
   //Serial.println("loop() called.");
   if ( imu.dataReady() ) {
     imu.update(UPDATE_GYRO | UPDATE_COMPASS);
-    //Serial.println("IMU data: ");
+    // get the new IMU angle using w and the equation (dtheta / dt) * (1 / freq) = dtheta
     float gyroX = (imu.calcGyro(imu.gx) - oldGyroX / IMU_FREQ);
     float gyroY = (imu.calcGyro(imu.gy) - oldGyroY / IMU_FREQ);
     float gyroZ = (imu.calcGyro(imu.gz) - oldGyroZ / IMU_FREQ);
     float compass = imu.computeCompassHeading();
     
-
     Serial.print("Gyro x: ");
     Serial.print(gyroX, 6);
     Serial.print(" Gyro y: ");
@@ -72,21 +74,14 @@ void loop() {
     Serial.print(" Compass: ");
     Serial.println(compass, 6);
 
+    // Keep track of old data for next loop
     oldGyroX = gyroX;
     oldGyroY = gyroY;
     oldGyroZ = gyroZ;
     counter++;
   }
   
-  // TODO: Replace this junk with a call to the IMU for input
-  // counter++;
-  // if (counter >= MAX_ITER) {
-  //   up = !up;
-  //   counter == 0;
-  // } else if (counter % TIME_TO_STEP == 0) {
-  //   Input += (up) ? 1 : -1;
-  // }
-  
+  // TODO: More commented out PID control code, untested
   // myPID.Compute();
   // analogWrite(PIN_OUTPUT, Output);
 
@@ -102,12 +97,4 @@ void loop() {
   // }
 
   // TODO: Use the output to control the motor
-/*
-  char* message;
-  sprintf(message, "Input: %f     Output: %f", Input, Output);
-  Serial.println(message);*/
-  if (counter > 10) {
-    counter = 0;
-    delay(2000);
-  }
 }
